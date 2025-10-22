@@ -63,6 +63,27 @@ pipeline {
             }
         }
 
+        stage('Sonar Analysis') {
+            environment {
+                scannerHome = tool "${SONARSCANNER}"
+            }
+            steps {
+                withSonarQubeEnv("${SONARSERVER}") {
+                    sh """
+                        ${scannerHome}/bin/sonar-scanner \
+                          -Dsonar.projectKey=vprofile \
+                          -Dsonar.projectName=vprofile \
+                          -Dsonar.projectVersion=${BUILD_VERSION} \
+                          -Dsonar.sources=src/ \
+                          -Dsonar.java.binaries=target/classes,target/test-classes \
+                          -Dsonar.junit.reportsPath=target/surefire-reports/ \
+                          -Dsonar.jacoco.reportsPath=target/jacoco.exec \
+                          -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml
+                    """
+                }
+            }
+        }
+
     }
 
     post {
