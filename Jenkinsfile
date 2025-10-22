@@ -16,6 +16,8 @@ pipeline {
         NEXUSPORT      = '8081'
         NEXUS_GRP_REPO = 'vpro-maven-group'
         NEXUS_LOGIN    = 'nexuslogin'
+        SONARSERVER     = 'sonarserver'   
+        SONARSCANNER    = 'sonarscanner'
     }
 
     stages {
@@ -48,6 +50,19 @@ pipeline {
                 }
             }
         }
+
+        stage('Checkstyle Analysis') {
+            steps {
+                sh 'mvn -s settings.xml checkstyle:checkstyle'
+            }
+            post {
+                always {
+                    echo 'Checkstyle stage completed'
+                    // If you have Warnings Next Generation plugin, you can publish the report here.
+                }
+            }
+        }
+
     }
 
     post {
