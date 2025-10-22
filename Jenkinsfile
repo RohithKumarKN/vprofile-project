@@ -36,6 +36,18 @@ pipeline {
                 }
             }
         }
+
+        stage('Test') {
+            steps {
+                sh 'mvn -s settings.xml test'
+            }
+            post {
+                always {
+                    // Publish JUnit test results if present
+                    junit allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml'
+                }
+            }
+        }
     }
 
     post {
