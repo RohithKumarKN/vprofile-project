@@ -71,27 +71,7 @@ pipeline {
         }
 
         
-stage('Sonar Analysis (CLI)') {
-      steps {
-        script {
-          // Resolve scanner installation path as a tool
-          env.SCANNER_HOME = tool "${SONARSCANNER}"     // Must exist under Manage Jenkins > Tools
-        }
-        withSonarQubeEnv("${SONARSERVER}") {
-          sh """
-            "${env.SCANNER_HOME}/bin/sonar-scanner" \
-              -Dsonar.projectKey=vprofile \
-              -Dsonar.projectName=vprofile \
-              -Dsonar.projectVersion=${env.BUILD_VERSION} \
-              -Dsonar.sources=src \
-              -Dsonar.java.binaries=target/classes,target/test-classes \
-              -Dsonar.junit.reportsPath=target/surefire-reports \
-              -Dsonar.jacoco.reportsPath=target/jacoco.exec \
-              -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml
-          """
-        }
-      }
-    }
+
 
 
         // stage('Quality Gate') {
