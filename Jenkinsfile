@@ -1,3 +1,12 @@
+// Optional Slack color map
+def COLOR_MAP = [
+  'SUCCESS':  'good',
+  'FAILURE':  'danger',
+  'UNSTABLE': '#FFCC00',
+  'ABORTED':  '#AAAAAA',
+  'NOT_BUILT':'#888888'
+]
+
 pipeline {
     agent any
 
@@ -70,6 +79,7 @@ pipeline {
             }
         }
 
+        // If you later re-enable it, ensure SonarQube webhook points to /sonarqube-webhook/
         // stage('Quality Gate') {
         //     steps {
         //         timeout(time: 30, unit: 'MINUTES') {
@@ -103,13 +113,14 @@ pipeline {
                 )
             }
         }
-
     }
 
-     post {
+    // ✅ Only ONE top-level post block
+    post {
         always {
             echo "Slack Notifications."
             script {
+                // If you don't use Slack, remove this whole script block
                 def color = COLOR_MAP.get(currentBuild.currentResult, '#439FE0') // default Slack blue
                 slackSend(
                     channel: '#jenkinscicd',
@@ -117,16 +128,10 @@ pipeline {
                     message: "*${currentBuild.currentResult ?: 'UNKNOWN'}*: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\nMore info: ${env.BUILD_URL}"
                 )
             }
+            echo "Pipeline finished: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
         }
         // Optional clean-up
         // success { deleteDir() }
         // failure { deleteDir() }
-    }
-
-
-    post {
-        always {
-            echo "Pipeline finished: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
-        }
     }
 }
