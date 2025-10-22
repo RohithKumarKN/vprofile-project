@@ -62,10 +62,22 @@ pipeline {
         }
 
         stage('Sonar Analysis') {
+            environment {
+                scannerHome = tool "${SONARSCANNER}"
+            }
             steps {
-                // withSonarQubeEnv injects server URL/token for Maven sonar:sonar
                 withSonarQubeEnv("${SONARSERVER}") {
-                    sh "mvn -s settings.xml -DskipTests -Dsonar.projectVersion=${env.BUILD_VERSION} verify sonar:sonar"
+                    sh """
+                        ${scannerHome}/bin/sonar-scanner \
+                          -Dsonar.projectKey=vprofile \
+                          -Dsonar.projectName=vprofile \
+                          -Dsonar.projectVersion=${BUILD_VERSION} \
+                          -Dsonar.sources=src/ \
+                          -Dsonar.java.binaries=target/classes,target/test-classes \
+                          -Dsonar.junit.reportsPath=target/surefire-reports/ \
+                          -Dsonar.jacoco.reportsPath=target/jacoco.exec \
+                          -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml
+                    """
                 }
             }
         }
