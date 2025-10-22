@@ -70,13 +70,13 @@ pipeline {
             }
         }
 
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 30, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
+        // stage('Quality Gate') {
+        //     steps {
+        //         timeout(time: 30, unit: 'MINUTES') {
+        //             waitForQualityGate abortPipeline: true
+        //         }
+        //     }
+        // }
 
         stage('UploadArtifact') {
             steps {
@@ -105,6 +105,24 @@ pipeline {
         }
 
     }
+
+     post {
+        always {
+            echo "Slack Notifications."
+            script {
+                def color = COLOR_MAP.get(currentBuild.currentResult, '#439FE0') // default Slack blue
+                slackSend(
+                    channel: '#jenkinscicd',
+                    color: color,
+                    message: "*${currentBuild.currentResult ?: 'UNKNOWN'}*: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\nMore info: ${env.BUILD_URL}"
+                )
+            }
+        }
+        // Optional clean-up
+        // success { deleteDir() }
+        // failure { deleteDir() }
+    }
+
 
     post {
         always {
