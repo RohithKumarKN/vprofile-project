@@ -77,6 +77,33 @@ pipeline {
                 }
             }
         }
+
+        stage('UploadArtifact') {
+            steps {
+                script {
+                    // Sanity check: ensure artifact exists before uploading
+                    if (!fileExists('target/vprofile-v2.war')) {
+                        error "Artifact target/vprofile-v2.war not found. Check your packaging step or artifact name."
+                    }
+                }
+                nexusArtifactUploader(
+                    nexusVersion: 'nexus3',
+                    protocol: 'http',
+                    nexusUrl: "${NEXUSIP}:${NEXUSPORT}",
+                    groupId: 'QA',
+                    version: "${env.BUILD_VERSION}",
+                    repository: "${RELEASE_REPO}",
+                    credentialsId: "${NEXUS_LOGIN}",
+                    artifacts: [[
+                        artifactId: 'vproapp',
+                        classifier: '',
+                        file: 'target/vprofile-v2.war',
+                        type: 'war'
+                    ]]
+                )
+            }
+        }
+
     }
 
     post {
