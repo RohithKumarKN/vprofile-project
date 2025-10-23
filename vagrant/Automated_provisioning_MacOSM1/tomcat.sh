@@ -1,7 +1,11 @@
 #!/bin/bash
 TOMURL="https://archive.apache.org/dist/tomcat/tomcat-10/v10.1.26/bin/apache-tomcat-10.1.26.tar.gz"
 dnf -y install java-17-openjdk java-17-openjdk-devel
+<<<<<<< HEAD
 dnf install git wget rsync unzip zip -y
+=======
+dnf install git wget rsync -y
+>>>>>>> c26d07794353bc31bc8cb7345a9e9ca7f3a8a723
 cd /tmp/
 wget $TOMURL -O tomcatbin.tar.gz
 EXTOUT=`tar xzvf tomcatbin.tar.gz`
