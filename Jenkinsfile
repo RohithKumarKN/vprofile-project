@@ -32,16 +32,16 @@ pipeline {
 
     options { timestamps() }
 
-    stages {
-        stage('Prepare Version') {
-            steps {
-                script {
-                    def ts = new Date().format("yyyyMMdd-HHmmss", TimeZone.getTimeZone('UTC'))
-                    env.BUILD_VERSION = "${env.BUILD_NUMBER}-${ts}"
-                    echo "BUILD_VERSION = ${env.BUILD_VERSION}"
-                }
-            }
-        }
+    // stages {
+    //     stage('Prepare Version') {
+    //         steps {
+    //             script {
+    //                 def ts = new Date().format("yyyyMMdd-HHmmss", TimeZone.getTimeZone('UTC'))
+    //                 env.BUILD_VERSION = "${env.BUILD_NUMBER}-${ts}"
+    //                 echo "BUILD_VERSION = ${env.BUILD_VERSION}"
+    //             }
+    //         }
+    //     }
 
         stage('Build') {
             steps {
@@ -88,7 +88,7 @@ pipeline {
         //             waitForQualityGate abortPipeline: true
         //         }
         //     }
-        // }
+       // }
 
         stage('UploadArtifact') {
             steps {
@@ -117,23 +117,23 @@ pipeline {
         }
     }
 
+
     // ✅ Only ONE top-level post block
-    post {
-        always {
-            echo "Slack Notifications."
-            script {
-                // If you don't use Slack, remove this whole script block
-                def color = COLOR_MAP.get(currentBuild.currentResult, '#439FE0') // default Slack blue
-                slackSend(
-                    channel: '#jenkinscicd',
-                    color: color,
-                    message: "*${currentBuild.currentResult ?: 'UNKNOWN'}*: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\nMore info: ${env.BUILD_URL}"
-                )
-            }
-            echo "Pipeline finished: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
-        }
-        // Optional clean-up
-        // success { deleteDir() }
-        // failure { deleteDir() }
-    }
-}
+    // post {
+    //     always {
+    //         echo "Slack Notifications."
+    //         script {
+    //             // If you don't use Slack, remove this whole script block
+    //             def color = COLOR_MAP.get(currentBuild.currentResult, '#439FE0') // default Slack blue
+    //             slackSend(
+    //                 channel: '#jenkinscicd',
+    //                 color: color,
+    //                 message: "*${currentBuild.currentResult ?: 'UNKNOWN'}*: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\nMore info: ${env.BUILD_URL}"
+    //             )
+    //         }
+    //         echo "Pipeline finished: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+    //     }
+    //     // Optional clean-up
+    //     // success { deleteDir() }
+    //     // failure { deleteDir() }
+    // }
