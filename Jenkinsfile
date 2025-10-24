@@ -15,8 +15,6 @@ pipeline {
         jdk   "JDK21"
     }
 
-
-
     environment {
         SNAP_REPO      = 'vprofile-snapshot'
         NEXUS_USER     = 'admin'
@@ -27,22 +25,12 @@ pipeline {
         NEXUSPORT      = '8081'
         NEXUS_GRP_REPO = 'vpro-maven-group'
         NEXUS_LOGIN    = 'nexuslogin'
-        SONARSERVER    = 'sonarserver'   // Must match Manage Jenkins > System > SonarQube servers (Name)
+        SONARSERVER    = 'sonarserver'
     }
 
     options { timestamps() }
 
-    // stages {
-    //     stage('Prepare Version') {
-    //         steps {
-    //             script {
-    //                 def ts = new Date().format("yyyyMMdd-HHmmss", TimeZone.getTimeZone('UTC'))
-    //                 env.BUILD_VERSION = "${env.BUILD_NUMBER}-${ts}"
-    //                 echo "BUILD_VERSION = ${env.BUILD_VERSION}"
-    //             }
-    //         }
-    //     }
-
+    stages {
         stage('Build') {
             steps {
                 sh 'mvn -s settings.xml -DskipTests install'
@@ -74,26 +62,15 @@ pipeline {
 
         stage('Sonar Analysis') {
             steps {
-                // withSonarQubeEnv injects server URL/token for Maven sonar:sonar
                 withSonarQubeEnv("${SONARSERVER}") {
                     sh "mvn -s settings.xml -DskipTests -Dsonar.projectVersion=${env.BUILD_VERSION} verify sonar:sonar"
                 }
             }
         }
 
-        // If you later re-enable it, ensure SonarQube webhook points to /sonarqube-webhook/
-        // stage('Quality Gate') {
-        //     steps {
-        //         timeout(time: 30, unit: 'MINUTES') {
-        //             waitForQualityGate abortPipeline: true
-        //         }
-        //     }
-       // }
-
         stage('UploadArtifact') {
             steps {
                 script {
-                    // Sanity check: ensure artifact exists before uploading
                     if (!fileExists('target/vprofile-v2.war')) {
                         error "Artifact target/vprofile-v2.war not found. Check your packaging step or artifact name."
                     }
@@ -117,23 +94,18 @@ pipeline {
         }
     }
 
-
-    // ✅ Only ONE top-level post block
-    // post {
-    //     always {
-    //         echo "Slack Notifications."
-    //         script {
-    //             // If you don't use Slack, remove this whole script block
-    //             def color = COLOR_MAP.get(currentBuild.currentResult, '#439FE0') // default Slack blue
-    //             slackSend(
-    //                 channel: '#jenkinscicd',
-    //                 color: color,
-    //                 message: "*${currentBuild.currentResult ?: 'UNKNOWN'}*: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\nMore info: ${env.BUILD_URL}"
-    //             )
-    //         }
-    //         echo "Pipeline finished: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
-    //     }
-    //     // Optional clean-up
-    //     // success { deleteDir() }
-    //     // failure { deleteDir() }
-    // }
+    post {
+        always {
+            echo "Slack Notifications."
+            script {
+                def color = COLOR_MAP.get(currentBuild.currentResult, '#439FE0')
+                slackSend(
+                    channel: '#jenkinscicd',
+                    color: color,
+                    message: "*${currentBuild.currentResult ?: 'UNKNOWN'}*: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\nMore info: ${env.BUILD_URL}"
+                )
+            }
+            echo "Pipeline finished: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+        }
+    }
+}
