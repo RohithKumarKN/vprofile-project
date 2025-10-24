@@ -30,7 +30,7 @@ pipeline {
         appRegistry = '401399516655.dkr.ecr.ap-south-1.amazonaws.com/vprofileappimg'
         vprofileRegistry = "https://401399516655.dkr.ecr.ap-south-1.amazonaws.com"
         cluster = "vproappstaging"
-        service = "vproappprodsvc"
+        service = "vprofileapptask-service-qrc5lmyl"
 
     }
 
