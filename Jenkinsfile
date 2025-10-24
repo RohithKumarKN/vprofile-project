@@ -15,7 +15,7 @@ pipeline {
         jdk   "JDK17"
     }
 
-    
+
 
     environment {
         SNAP_REPO      = 'vprofile-snapshot'
@@ -23,7 +23,7 @@ pipeline {
         NEXUS_PASS     = 'admin'
         RELEASE_REPO   = 'vprofile-release'
         CENTRAL_REPO   = 'vpro-maven-central'
-        NEXUSIP        = '172.31.47.226'
+        NEXUSIP        = '172.31.39.58'
         NEXUSPORT      = '8081'
         NEXUS_GRP_REPO = 'vpro-maven-group'
         NEXUS_LOGIN    = 'nexuslogin'
