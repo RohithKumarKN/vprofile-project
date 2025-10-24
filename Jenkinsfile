@@ -31,6 +31,16 @@ pipeline {
     options { timestamps() }
 
     stages {
+        stage('Prepare Version') {
+            steps {
+                script {
+                    def ts = new Date().format("yyyyMMdd-HHmmss", TimeZone.getTimeZone('UTC'))
+                    env.BUILD_VERSION = "${env.BUILD_NUMBER}-${ts}"
+                    echo "BUILD_VERSION = ${env.BUILD_VERSION}"
+                }
+            }
+        }
+
         stage('Build') {
             steps {
                 sh 'mvn -s settings.xml -DskipTests install'
@@ -109,8 +119,3 @@ pipeline {
         }
     }
 }
-
-
-
-
-
