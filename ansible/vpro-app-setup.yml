@@ -20,6 +20,13 @@
       tags:
         - deploy
 
+    - name: Check if current ROOT directory exists
+      stat:
+        path: /usr/local/tomcat8/webapps/ROOT
+      register: artifact_stat
+      tags:
+        - deploy
+
     - name: Backup current ROOT
       block:
         - name: Archive ROOT dir with timestamp
@@ -36,7 +43,7 @@
           loop:
             - /usr/local/tomcat8/webapps/ROOT
             - /usr/local/tomcat8/webapps/ROOT.war
-          when: archive_info.changed
+          when: archive_info is defined and archive_info.changed
 
     - name: Deploy new artifact
       copy:
