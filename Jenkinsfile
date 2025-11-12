@@ -12,16 +12,16 @@ pipeline {
 
     tools {
         maven "MAVEN3.9"
-        jdk   "JDK21"
+        jdk   "JDK17"
     }
 
     environment {
         SNAP_REPO      = 'vprofile-snapshot'
         NEXUS_USER     = 'admin'
-        NEXUS_PASS     = 'admin'
+        NEXUS_PASS     = 'admin123'
         RELEASE_REPO   = 'vprofile-release'
         CENTRAL_REPO   = 'vpro-maven-central'
-        NEXUSIP        = '172.31.39.58'
+        NEXUSIP        = '172.31.47.37'
         NEXUSPORT      = '8081'
         NEXUS_GRP_REPO = 'vpro-maven-group'
         NEXUS_LOGIN    = 'nexuslogin'
@@ -104,19 +104,19 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            echo "Slack Notifications."
-            script {
-                def color = COLOR_MAP.get(currentBuild.currentResult, '#439FE0')
-                slackSend(
-                    channel: '#jenkinscicd',
-                    color: color,
-                    message: "*${currentBuild.currentResult ?: 'UNKNOWN'}*: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\nMore info: ${env.BUILD_URL}"
-                )
-            }
-            echo "Pipeline finished: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
-        }
-    }
+    // post {
+    //     always {
+    //         echo "Slack Notifications."
+    //         script {
+    //             def color = COLOR_MAP.get(currentBuild.currentResult, '#439FE0')
+    //             slackSend(
+    //                 channel: '#jenkinscicd',
+    //                 color: color,
+    //                 message: "*${currentBuild.currentResult ?: 'UNKNOWN'}*: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\nMore info: ${env.BUILD_URL}"
+    //             )
+    //         }
+    //         echo "Pipeline finished: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+    //     }
+    // }
 }
 
