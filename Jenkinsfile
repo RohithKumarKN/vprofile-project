@@ -1,12 +1,3 @@
-// Optional Slack color map
-def COLOR_MAP = [
-  'SUCCESS':  'good',
-  'FAILURE':  'danger',
-  'UNSTABLE': '#FFCC00',
-  'ABORTED':  '#AAAAAA',
-  'NOT_BUILT':'#888888'
-]
-
 pipeline {
     agent any
 
@@ -47,7 +38,6 @@ pipeline {
             }
             post {
                 success {
-                    echo "Now Archiving."
                     archiveArtifacts artifacts: '**/*.war', fingerprint: true
                 }
             }
@@ -82,7 +72,7 @@ pipeline {
             steps {
                 script {
                     if (!fileExists('target/vprofile-v2.war')) {
-                        error "Artifact target/vprofile-v2.war not found. Check your packaging step or artifact name."
+                        error "Artifact target/vprofile-v2.war not found."
                     }
                 }
                 nexusArtifactUploader(
@@ -102,45 +92,29 @@ pipeline {
                 )
             }
         }
-    }
 
-        stage('Ansible Deploy to staging'){
+        stage('Ansible Deploy to staging') {
             steps {
                 ansiblePlaybook([
-                inventory   : 'ansible/stage.inventory',
-                playbook    : 'ansible/site.yml',
-                installation: 'ansible',
-                colorized   : true,
-			    credentialsId: 'applogin',
-			    disableHostKeyChecking: true,
-                extraVars   : [
-                   	USER: "admin",
-                    PASS: "${NEXUS_PASS}",
-			        nexusip: "172.31.47.37",
-			        reponame: "vprofile-release",
-			        groupid: "QA",
-			        time: "${env.BUILD_TIMESTAMP}",
-			        build: "${env.BUILD_ID}",
-                    artifactid: "vproapp",
-			        vprofile_version: "vproapp-${env.BUILD_ID}-${env.BUILD_TIMESTAMP}.war"
-                ]
-             ])
+                    inventory   : 'ansible/stage.inventory',
+                    playbook    : 'ansible/site.yml',
+                    installation: 'ansible',
+                    colorized   : true,
+                    credentialsId: 'applogin',
+                    disableHostKeyChecking: true,
+                    extraVars   : [
+                        USER: "admin",
+                        PASS: "${NEXUS_PASS}",
+                        nexusip: "172.31.47.37",
+                        reponame: "vprofile-release",
+                        groupid: "QA",
+                        time: "${env.BUILD_TIMESTAMP}",
+                        build: "${env.BUILD_ID}",
+                        artifactid: "vproapp",
+                        vprofile_version: "vproapp-${env.BUILD_ID}-${env.BUILD_TIMESTAMP}.war"
+                    ]
+                ])
             }
-        }    
-
-    // post {
-    //     always {
-    //         echo "Slack Notifications."
-    //         script {
-    //             def color = COLOR_MAP.get(currentBuild.currentResult, '#439FE0')
-    //             slackSend(
-    //                 channel: '#jenkinscicd',
-    //                 color: color,
-    //                 message: "*${currentBuild.currentResult ?: 'UNKNOWN'}*: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\nMore info: ${env.BUILD_URL}"
-    //             )
-    //         }
-    //         echo "Pipeline finished: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
-    //     }
-    // }
+        }
+    }
 }
-
