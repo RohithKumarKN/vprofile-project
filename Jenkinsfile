@@ -25,8 +25,10 @@ pipeline {
         stage('Prepare Version') {
             steps {
                 script {
+                    // Safe timestamp format without spaces
                     def ts = new Date().format("yyyyMMdd-HHmmss", TimeZone.getTimeZone('UTC'))
                     env.BUILD_VERSION = "${env.BUILD_NUMBER}-${ts}"
+                    env.BUILD_TIMESTAMP = ts
                     echo "BUILD_VERSION = ${env.BUILD_VERSION}"
                 }
             }
@@ -105,8 +107,8 @@ pipeline {
                     extraVars   : [
                         USER: "admin",
                         PASS: "${NEXUS_PASS}",
-                        nexusip: "172.31.47.37",
-                        reponame: "vprofile-release",
+                        nexusip: "${NEXUSIP}",
+                        reponame: "${RELEASE_REPO}",
                         groupid: "QA",
                         time: "${env.BUILD_TIMESTAMP}",
                         build: "${env.BUILD_ID}",
