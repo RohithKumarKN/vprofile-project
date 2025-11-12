@@ -25,10 +25,8 @@ pipeline {
         stage('Prepare Version') {
             steps {
                 script {
-                    // Safe timestamp format without spaces
                     def ts = new Date().format("yyyyMMdd-HHmmss", TimeZone.getTimeZone('UTC'))
                     env.BUILD_VERSION = "${env.BUILD_NUMBER}-${ts}"
-                    env.BUILD_TIMESTAMP = ts
                     echo "BUILD_VERSION = ${env.BUILD_VERSION}"
                 }
             }
@@ -36,7 +34,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'mvn -s settings.xml -DskipTests install'
+                sh 'mvn clean package -DskipTests'
             }
             post {
                 success {
@@ -47,7 +45,7 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh 'mvn -s settings.xml test'
+                sh 'mvn test'
             }
             post {
                 always {
@@ -58,14 +56,14 @@ pipeline {
 
         stage('Checkstyle Analysis') {
             steps {
-                sh 'mvn -s settings.xml checkstyle:checkstyle'
+                sh 'mvn checkstyle:checkstyle'
             }
         }
 
         stage('Sonar Analysis') {
             steps {
                 withSonarQubeEnv("${SONARSERVER}") {
-                    sh "mvn -s settings.xml -DskipTests -Dsonar.projectVersion=${env.BUILD_VERSION} verify sonar:sonar"
+                    sh "mvn verify sonar:sonar -DskipTests -Dsonar.projectVersion=${env.BUILD_VERSION}"
                 }
             }
         }
@@ -111,8 +109,7 @@ pipeline {
                         reponame: "${RELEASE_REPO}",
                         groupid: "QA",
                         artifactid: "vproapp",
-                        build_version: "${env.BUILD_VERSION}",
-                        vprofile_version: "vproapp-${env.BUILD_VERSION}.war"
+                        build_version: "${env.BUILD_VERSION}"
                     ]
                 ])
             }
