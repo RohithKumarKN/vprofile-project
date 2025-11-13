@@ -1,0 +1,25 @@
+# Application server group variables
+ansible_user: ubuntu
+tomcat_home: /usr/local/tomcat8
+tomcat_port: 8080
+
+# Application properties defaults
+db_host: localhost
+db_port: 3306
+db_user: root
+db_password: root
+
+memcached_active_host: localhost
+memcached_active_port: 11211
+memcached_standby_host: 127.0.0.2
+memcached_standby_port: 11211
+
+rabbitmq_host: localhost
+rabbitmq_port: 5672
+rabbitmq_user: test
+rabbitmq_password: test
+
+elasticsearch_host: localhost
+elasticsearch_port: 9300
+elasticsearch_cluster: vprofile
+elasticsearch_node: vprofilenode

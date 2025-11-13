@@ -1,25 +1,26 @@
-#JDBC Configutation for Database Connection
+#JDBC Configuration for Database Connection
 jdbc.driverClassName=com.mysql.jdbc.Driver
-jdbc.url=jdbc:mysql://dbhost:3306/accounts?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull
-jdbc.username=db_user
-jdbc.password=db_password
+jdbc.url=jdbc:mysql://{{ db_host }}:{{ db_port }}/accounts?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull
+jdbc.username={{ db_user }}
+jdbc.password={{ db_password }}
 
 #Memcached Configuration For Active and StandBy Host
 #For Active Host
-memcached.active.host=127.0.0.1
-memcached.active.port=11211
+memcached.active.host={{ memcached_active_host }}
+memcached.active.port={{ memcached_active_port }}
 #For StandBy Host
-memcached.standBy.host=127.0.0.2
-memcached.standBy.port=11211
+memcached.standBy.host={{ memcached_standby_host }}
+memcached.standBy.port={{ memcached_standby_port }}
 
 #RabbitMq Configuration
-rabbitmq.address=18.220.62.126
-rabbitmq.port=5672
-rabbitmq.username=test
-rabbitmq.password=test
+rabbitmq.address={{ rabbitmq_host }}
+rabbitmq.port={{ rabbitmq_port }}
+rabbitmq.username={{ rabbitmq_user }}
+rabbitmq.password={{ rabbitmq_password }}
 
-#Elasticesearch Configuration
-elasticsearch.host =192.168.1.85
-elasticsearch.port =9300
-elasticsearch.cluster=vprofile
-elasticsearch.node=vprofilenode
+#Elasticsearch Configuration
+elasticsearch.host={{ elasticsearch_host }}
+elasticsearch.port={{ elasticsearch_port }}
+elasticsearch.cluster={{ elasticsearch_cluster }}
+elasticsearch.node={{ elasticsearch_node }}
+
