@@ -93,11 +93,21 @@ pipeline {
             }
         }
 
+        stage('Jakarta Migration') {
+            steps {
+                sh '''
+                java -jar /usr/local/jakartaee-migration.jar \
+                target/vprofile-v2.war target/vprofile-v2-migrated.war
+                mv target/vprofile-v2-migrated.war target/vprofile-v2.war
+                '''
+            }
+        }
+
         stage('Ansible Deploy to staging') {
             steps {
                 ansiblePlaybook([
                     inventory   : 'ansible/stage.inventory',
-                    playbook    : 'ansible/site.yml',
+                    playbook    : 'ansible/vpro-app-setup.yml',
                     installation: 'ansible',
                     colorized   : true,
                     credentialsId: 'applogin',

@@ -1,77 +1,64 @@
-- name: Setup Tomcat8 & Deploy Artifact
+- name: Setup Tomcat10 & Deploy Artifact
   hosts: appsrvgrp
   become: yes
   vars:
-    timestamp: "{{ansible_date_time.date}}_{{ansible_date_time.hour}}_{{ansible_date_time.minute}}"
+    tomcat_home: /usr/local/tomcat10
+    migration_tool: /usr/local/jakartaee-migration.jar
+    timestamp: "{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}_{{ ansible_date_time.minute }}"
 
   tasks:
-    - name: Download latest VProfile.war from Nexus
+    - name: Install Java 17 and Authbind
+      apt:
+        name:
+          - openjdk-17-jdk
+          - authbind
+        state: present
+        update_cache: yes
+
+    - name: Download Tomcat 10
       get_url:
-        url: "http://{{USER}}:{{PASS}}@{{nexusip}}:8081/repository/{{reponame}}/{{groupid}}/{{artifactid}}/{{build_version}}/{{artifactid}}-{{build_version}}.war"
-        dest: "/tmp/{{artifactid}}-{{build_version}}.war"
-      register: wardeploy
-      tags:
-        - deploy
+        url: "https://dlcdn.apache.org/tomcat/tomcat-10/v10.1.49/bin/apache-tomcat-10.1.49.tar.gz"
+        dest: "/tmp/apache-tomcat-10.1.49.tar.gz"
 
-    - name: Stop Tomcat service
-      service:
-        name: tomcat
-        state: stopped
-      tags:
-        - deploy
-
-    - name: Check if current ROOT directory exists
-      stat:
-        path: /usr/local/tomcat8/webapps/ROOT
-      register: artifact_stat
-      tags:
-        - deploy
-
-    - name: Backup current ROOT
-      block:
-        - name: Archive ROOT dir with timestamp
-          archive:
-            path: /usr/local/tomcat8/webapps/ROOT
-            dest: "/opt/ROOT_{{timestamp}}.tgz"
-          when: artifact_stat.stat.exists
-          register: archive_info
-
-        - name: Delete current artifact
-          file:
-            path: "{{item}}"
-            state: absent
-          loop:
-            - /usr/local/tomcat8/webapps/ROOT
-            - /usr/local/tomcat8/webapps/ROOT.war
-          when: archive_info is defined and archive_info.changed
-
-    - name: Deploy new artifact
-      copy:
-        src: "/tmp/{{artifactid}}-{{build_version}}.war"
-        dest: /usr/local/tomcat8/webapps/ROOT.war
+    - name: Extract Tomcat 10
+      unarchive:
+        src: "/tmp/apache-tomcat-10.1.49.tar.gz"
+        dest: "/usr/local/"
         remote_src: yes
-      register: deploy_info
 
-    - name: Start Tomcat service
-      service:
-        name: tomcat
-        state: started
-      when: deploy_info.changed
+    - name: Rename Tomcat directory
+      command: mv /usr/local/apache-tomcat-10.1.49 {{ tomcat_home }}
+      args:
+        creates: "{{ tomcat_home }}"
 
-    - name: Wait until ROOT.war is extracted
-      wait_for:
-        path: /usr/local/tomcat8/webapps/ROOT
+    - name: Configure Tomcat port 80
+      replace:
+        path: "{{ tomcat_home }}/conf/server.xml"
+        regexp: 'port="8080"'
+        replace: 'port="80"'
 
-    - name: Deploy web configuration file
-      template:
-        src: templates/application.j2
-        dest: /usr/local/tomcat8/webapps/ROOT/WEB-INF/classes/application.properties
-        force: yes
-      notify:
-        - Restart Tomcat
+    - name: Configure AUTHBIND for port 80
+      file:
+        path: /etc/authbind/byport/80
+        state: touch
+        owner: ubuntu
+        mode: '0500'
 
-  handlers:
+    - name: Download Jakarta Migration Tool
+      get_url:
+        url: "https://archive.apache.org/dist/tomcat/jakartaee-migration/v1.0.9/binaries/jakartaee-migration-1.0.9-shaded.jar"
+        dest: "{{ migration_tool }}"
+
+    - name: Download latest WAR from Nexus
+      get_url:
+        url: "http://{{ USER }}:{{ PASS }}@{{ nexusip }}:8081/repository/{{ reponame }}/{{ groupid }}/{{ artifactid }}/{{ build_version }}/{{ artifactid }}-{{ build_version }}.war"
+        dest: "/tmp/{{ artifactid }}-{{ build_version }}.war"
+
+    - name: Migrate WAR for Jakarta EE
+      command: >
+        java -jar {{ migration_tool }}
+        /tmp/{{ artifactid }}-{{ build_version }}.war
+        {{ tomcat_home }}/webapps/ROOT.war
+
     - name: Restart Tomcat
-      service:
-        name: tomcat
-        state: restarted
+      command: AUTHBIND=yes {{ tomcat_home }}/bin/catalina.sh restart
