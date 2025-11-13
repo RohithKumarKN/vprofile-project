@@ -68,6 +68,25 @@ pipeline {
             }
         }
 
+        stage('Jakarta Migration') {
+            steps {
+                script {
+                    sh '''
+                    # Download Jakarta EE migration tool if not present
+                    if [ ! -f /tmp/jakartaee-migration.jar ]; then
+                        wget -q https://archive.apache.org/dist/tomcat/jakartaee-migration/v1.0.9/binaries/jakartaee-migration-1.0.9-shaded.jar -O /tmp/jakartaee-migration.jar
+                    fi
+                    
+                    # Migrate WAR file
+                    java -jar /tmp/jakartaee-migration.jar target/vprofile-v2.war target/vprofile-v2-migrated.war
+                    
+                    # Replace original with migrated version
+                    mv target/vprofile-v2-migrated.war target/vprofile-v2.war
+                    '''
+                }
+            }
+        }
+
         stage('UploadArtifact') {
             steps {
                 script {
